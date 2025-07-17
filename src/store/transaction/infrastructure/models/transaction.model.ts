@@ -26,6 +26,18 @@ export class TransactionModel implements TransactionEntity {
     @Column({ type: 'varchar', nullable: false })
     transaction_estado: string;
 
+    @Column({ type: 'varchar', nullable: false })
+    transaction_titular: string;
+
+    @Column({ type: 'varchar', nullable: false })
+    transaction_tarjeta_number: number;
+
+    @Column({ type: 'int', nullable: false })
+    transaction_verify_code: number;
+
+    @Column({ type: 'varchar', nullable: false })
+    transaction_expired_date: string;
+
     @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     create_at: string;
 

@@ -19,6 +19,8 @@ export class TransactionRepository implements TransactionPort {
       await this.transactionModel.save(newTransaction);
       return newTransaction;
     } catch (error) {
+      console.log(error.message, error.stack, ':createTransaction');
+      
       return null;
     }
   }
