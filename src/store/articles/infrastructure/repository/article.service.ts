@@ -12,8 +12,14 @@ export class ArticleRepository implements ArticlePort {
     private readonly articleModel: Repository<ArticleModel>,
   ) {}
 
-  creteArticle(article: ArticleEntity): Promise<ArticleEntity> {
-    throw new Error('Method not implemented.');
+  async creteArticle(article: ArticleEntity): Promise<ArticleEntity | null> {
+    try {
+      const newArticle = this.articleModel.create(article);
+      const savedArticle = await this.articleModel.save(newArticle);
+      return savedArticle;
+    } catch (error) {
+      return null;
+    }
   }
 
   async getArticles(): Promise<ArticleEntity[] | null> {

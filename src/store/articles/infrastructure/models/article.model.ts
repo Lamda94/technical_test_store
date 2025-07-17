@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ArticleEntity } from "../../domain/entity/article.entity";
 
 @Entity({ name: 'articles' })
@@ -23,4 +23,10 @@ export class ArticleModel implements ArticleEntity{
 
     @Column({ type: 'int', nullable: false })
     article_status: number;
+
+    @CreateDateColumn({ type: 'timestamp' })
+    created_at: Date;
+
+    @UpdateDateColumn({ type: 'timestamp' })    
+    updated_at: Date;
 }
