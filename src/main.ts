@@ -22,6 +22,7 @@ async function bootstrap() {
     .setDescription('Backend del producto web strore.')
     .setVersion('1.0.0')
     .addTag('Article', 'Services for articles')
+    .addTag('Customer', 'Services for customers')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

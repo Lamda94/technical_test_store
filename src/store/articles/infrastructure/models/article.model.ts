@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ArticleEntity } from "../../domain/entity/article.entity";
+import { OrderModel } from "src/store/order/infrastructure/models/order.model";
 
 @Entity({ name: 'articles' })
 export class ArticleModel implements ArticleEntity{
@@ -29,4 +30,7 @@ export class ArticleModel implements ArticleEntity{
 
     @UpdateDateColumn({ type: 'timestamp' })    
     updated_at: Date;
+
+    @OneToMany(() => OrderModel, order => order.article)
+    order: OrderModel;
 }

@@ -78,7 +78,8 @@ export class ArticleSeeder {
         article_status: 0,
       },
     ];
-
+    const articlesList = await this.articleService.getArticles();
+    if (articlesList && articlesList.length > 0) return;
     for (const article of articles) {
       await this.articleService.creteArticle(article);
     }

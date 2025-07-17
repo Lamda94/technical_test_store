@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { CustomerEntity } from "../../domain/entity/customer.entity";
+import { OrderModel } from "src/store/order/infrastructure/models/order.model";
 
 @Entity("customer")
 export class CustomerModel implements CustomerEntity {
@@ -26,5 +27,7 @@ export class CustomerModel implements CustomerEntity {
 
     @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     updated_at: Date;
-    
+
+    @OneToMany(() => OrderModel, (order) => order.customer)
+    order: OrderModel;
 }
