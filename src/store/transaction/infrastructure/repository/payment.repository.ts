@@ -3,7 +3,10 @@ import { PaymentPort } from '../../domain/port/payment.port';
 import {
   CardEntity,
   ICompanyResponse,
+  ICreateCharge,
   ICreateTransactionCard,
+  ITransactionDetail,
+  ITransactionResponse,
   ITransactionStatusResponse,
   SaveCardEntity,
 } from '../../domain/entity/payment.enity';
@@ -11,6 +14,58 @@ import axios from 'axios';
 
 @Injectable()
 export class PaymentRepository implements PaymentPort {
+  async startTransaction(payload: ICreateCharge): Promise<ITransactionResponse | null> {
+    try {
+      const url = process.env.BASE_URL_PAYMENT;
+      const privateKey = process.env.PRIVATE_KEY;
+
+      let config = {
+        method: 'post',
+        maxBodyLength: Infinity,
+        url: `${url}/transactions`,
+        headers: {
+          'Content-Type': 'application/xml',
+          Authorization: `Bearer ${privateKey}`,
+        },
+        data: payload,
+      };
+      
+      const response = await axios.request(config);
+      const json_response = response.data;
+
+      return json_response;
+    } catch (error) {
+      console.log(error.message, error.stack, ':startTransaction');
+      return null;
+    }
+  }
+
+  async getStatusTransaction(id: string): Promise<ITransactionDetail | null> {
+    try {
+      const url = process.env.BASE_URL_PAYMENT;
+      const privateKey = process.env.PRIVATE_KEY;
+
+      let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: `${url}/transactions/${id}`,
+        headers: {
+          'Content-Type': 'application/xml',
+          Authorization: `Bearer ${privateKey}`,
+        },
+      };
+
+      const response = await axios.request(config);
+      const json_response = response.data;
+
+      return json_response;
+    } catch (error) {
+      console.log(error.message, error.stack, ':getAcceptanceToken');
+
+      return null;
+    }
+  }
+
   async createPaymentSources(
     data: ICreateTransactionCard,
   ): Promise<ITransactionStatusResponse | null> {
@@ -39,6 +94,7 @@ export class PaymentRepository implements PaymentPort {
       return null;
     }
   }
+
   async getAcceptanceToken(): Promise<ICompanyResponse | null> {
     try {
       const url = process.env.BASE_URL_PAYMENT;

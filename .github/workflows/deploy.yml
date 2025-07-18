@@ -1,0 +1,89 @@
+name: Despliegue - Store
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v2
+
+      - name: Create .env.prod
+        run: |
+          rm -rf .env.prod
+          touch .env.prod
+          echo "DB_TYPE=${{ secrets.DB_TYPE }}" >> .env.prod
+          echo "HOST_DB=${{ secrets.HOST_DB }}" >> .env.prod
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.prod
+          echo "USER_DB=${{ secrets.USER_DB }}" >> .env.prod
+          echo "USER_DB_PASS=${{ secrets.USER_DB_PASS }}" >> .env.prod
+          echo "DB_NAME_DEV=${{ secrets.DB_NAME_DEV }}" >> .env.prod
+          echo "UAT_URL=${{ secrets.UAT_URL }}" >> .env.prod
+          echo "PORT_APP=${{ secrets.PORT_APP }}" >> .env.prod
+          echo "UAT_SANDBOX_URL=${{ secrets.UAT_SANDBOX_URL }}" >> .env.prod
+          echo "PUBLIC_KEY=${{ secrets.PUBLIC_KEY }}" >> .env.prod
+          echo "PRIVATE_KEY=${{ secrets.PRIVATE_KEY }}" >> .env.prod
+          echo "SECRET_INTEGRITY=${{ secrets.SECRET_INTEGRITY }}" >> .env.prod
+          echo "BASE_URL_PAYMENT=${{ secrets.BASE_URL_PAYMENT }}" >> .env.prod
+
+          cd ..
+
+      - name: Zip project store
+        run: |
+          cd ..
+          zip -r technical_test_store.zip technical_test_store -x "*.git*" "*node_modules*" "*.github*" "*.husky*" "*sonar-project.properties" "*.vscode-upload.json" "*.DS_Store" "*.gitignore"
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Add remote host to known_hosts
+        run: |
+          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Save and backup of old backend
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          sudo rm -rf /home/store/technical_test_store.zip || true
+          sudo rm -rf /home/store/technical_test_store/node_modules || true
+          mv /home/store/technical_test_store /home/store/versions/technical_test_store-$(date +%Y%m%d%H%M%S) || true
+          EOF
+
+      - name: Copy project to server
+        run: |
+          cd ..
+          scp -P ${{ secrets.SSH_PORT }} technical_test_store.zip ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/store
+
+      - name: Linked node
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo -S ln -s /ubuntu/.nvm/versions/node/v22.13.0/bin/node /usr/bin/node || true"
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo -S ln -s /ubuntu/.nvm/versions/node/v22.13.0/bin/pnpm /usr/bin/pnpm || true"
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo -S ln -s /ubuntu/.nvm/versions/node/v22.13.0/bin/pm2 /usr/bin/pm2 || true"
+
+      - name: Testing node version
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo node -v"
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo pnpm -v"
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo pm2 -v"
+
+      - name: Unzip project backend in server
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo unzip -o /home/store/technical_test_store.zip -d /home/store"
+
+      - name: Install dependencies backend
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/store/technical_test_store && sudo pnpm i"
+
+      - name: Build project
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/store/technical_test_store && sudo pnpm run build"
+
+      - name: Start or reload pm2 backend
+        run: |
+          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd /home/store/technical_test_store && (sudo pm2 reload pm2.config.js || sudo pm2 start pm2.config.js) && sudo pm2 save"

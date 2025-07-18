@@ -21,7 +21,7 @@ export interface SaveCardEntity {
 
 export interface ICompanyResponse {
   data: ICompany;
-  meta: Record<string, unknown>;
+  meta: Record<string, any>;
 }
 
 export interface ICompany {
@@ -92,6 +92,116 @@ export interface ICreateCharge {
   };
   reference: string;
   payment_source_id: number;
+}
+
+export interface ITransactionResponse {
+  data: {
+    id: string;
+    created_at: string;
+    finalized_at: string | null;
+    amount_in_cents: number;
+    reference: string;
+    customer_email: string;
+    currency: string;
+    payment_method_type: string;
+    payment_method: {
+      type: string;
+      extra: {
+        bin: string;
+        name: string;
+        brand: string;
+        exp_year: string;
+        card_type: string;
+        exp_month: string;
+        last_four: string;
+        card_holder: string;
+        is_three_ds: boolean;
+        three_ds_auth_type: string | null;
+      };
+      installments: number;
+    };
+    status: string;
+    status_message: string | null;
+    billing_data: any | null;
+    shipping_address: any | null;
+    redirect_url: string | null;
+    payment_source_id: number;
+    payment_link_id: string | null;
+    customer_data: any | null;
+    bill_id: string | null;
+    taxes: any[];
+    tip_in_cents: number | null;
+  };
+  meta: Record<string, any>;
+}
+
+export interface ITransactionDetail {
+  data: {
+    id: string;
+    created_at: string;
+    finalized_at: string;
+    amount_in_cents: number;
+    reference: string;
+    currency: string;
+    payment_method_type: string;
+    payment_method: {
+      type: string;
+      extra: {
+        name: string;
+        brand: string;
+        card_type: string;
+        last_four: string;
+        is_three_ds: boolean;
+        three_ds_auth: {
+          current_step: string;
+          current_step_status: string;
+        };
+        three_ds_auth_type: string | null;
+        external_identifier: string;
+        processor_response_code: string;
+      };
+      installments: number;
+    };
+    payment_link_id: string | null;
+    redirect_url: string | null;
+    status: string;
+    status_message: string | null;
+    merchant: {
+      id: number;
+      name: string;
+      legal_name: string;
+      contact_name: string;
+      phone_number: string;
+      logo_url: string | null;
+      legal_id_type: string;
+      email: string;
+      legal_id: string;
+      public_key: string;
+    };
+    taxes: any[];
+    tip_in_cents: number | null;
+  };
+  meta: Record<string, any>;
+}
+
+
+export interface IAcceptanceUrl {
+  presigned_acceptance: tokenData;
+  presigned_personal_data_auth: tokenData;
+}
+
+export interface tokenData {
+  url: string;
+  token: string;
+}
+
+
+export enum TransactionStatus {
+  APPROVED = 'APPROVED',
+  DECLINED = 'DECLINED',
+  PENDING = 'PENDING',
+  VOIDED = 'VOIDED',
+  ERROR = 'ERROR',
 }
 
 

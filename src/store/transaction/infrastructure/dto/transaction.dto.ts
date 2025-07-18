@@ -1,6 +1,6 @@
 import { CustomerEntity } from "src/store/customer/domain/entity/customer.entity";
 import { OrderEntity } from "src/store/order/domain/entity/order.entity";
-import { CreatePayment, TarjetaEntity } from "../../domain/entity/transaction.entity";
+import { CreatePayment, TarjetaEntity, TokensEntity } from "../../domain/entity/transaction.entity";
 import { IsDefined, IsNumber, IsObject, IsString, ValidateNested } from "class-validator";
 import { Type } from 'class-transformer';
 import { CreateCustomerDto } from "src/store/customer/infrastructure/dtos/customer.dto";
@@ -45,7 +45,23 @@ class TarjetaDto implements TarjetaEntity{
     expired_date: string;
 }
 
+export class TokenDataDto implements TokensEntity {
+  acceptance_token: string;
+  personal_data_token: string;
+}
+
 export class PaymentDataDto implements CreatePayment{
+    @ApiProperty({
+        description: 'Token de aceptacion',
+        required: true,
+        type: TokenDataDto
+    })
+    @IsDefined()
+    @IsObject()
+    @ValidateNested()
+    @Type(() => TokenDataDto) 
+    tokens: TokensEntity;
+
     @ApiProperty({
         description: 'Datos del cliente',
         required: true,

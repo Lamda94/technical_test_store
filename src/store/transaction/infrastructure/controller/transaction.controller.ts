@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { TransactionCaseUse } from '../../application/transaction.case';
 import { TransactionRepository } from '../repository/transaction.repository';
 import { OrderRepository } from 'src/store/order/infrastructure/repository/order.repository';
@@ -26,5 +26,15 @@ export class TransactionController {
     @Post('generate')
     async generateTransaction(@Body() transactionData: CreatePayment){
         return await this.transactionCase.initializePayment(transactionData);
+    }
+
+    @Get('status')
+    async validateStatusTransaction(@Query('id') id:string){
+        return await this.transactionCase.ValidateStatusTransaction(id);
+    }
+
+    @Get('acceptance/links')
+    async getAcceptance(){
+        return await this.transactionCase.getAcceptance();
     }
 }

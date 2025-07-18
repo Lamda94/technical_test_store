@@ -10,6 +10,9 @@ export class TransactionModel implements TransactionEntity {
     @Column({ type: 'uuid', nullable: true })
     transaction_order_id: string;
 
+    @Column({ type: 'varchar', nullable: true, default: 'N.R'})
+    transaction_payment_id: string;
+
     @Column({ type: 'int', nullable: false,  })
     @Generated("increment")
     transaction_number: number;

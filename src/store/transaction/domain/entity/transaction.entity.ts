@@ -4,6 +4,7 @@ import { OrderEntity } from 'src/store/order/domain/entity/order.entity';
 export interface TransactionEntity {
   transaction_id?: string;
   transaction_order_id?: string;
+  transaction_payment_id?: string;
   transaction_number?: number;
   transaction_monto: number;
   transaction_fecha: string;
@@ -21,6 +22,12 @@ export interface CreatePayment {
   customer: CustomerEntity;
   order: OrderEntity;
   tarjeta: TarjetaEntity;
+  tokens: TokensEntity;
+}
+
+export interface TokensEntity {
+  acceptance_token: string;
+  personal_data_token: string;
 }
 
 export interface TarjetaEntity {

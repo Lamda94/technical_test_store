@@ -6,7 +6,7 @@ import { OrderPort } from "src/store/order/domain/port/order.port";
 import { HttpException, HttpStatus } from "@nestjs/common";
 import * as moment from 'moment-timezone';
 import { PaymentPort } from "../domain/port/payment.port";
-import { ICreateCharge, ICreateTransactionCard } from "../domain/entity/payment.enity";
+import { IAcceptanceUrl, ICreateCharge, ICreateTransactionCard, TransactionStatus } from "../domain/entity/payment.enity";
 
 export class TransactionCaseUse {
     constructor(
@@ -55,7 +55,7 @@ export class TransactionCaseUse {
             const transaction = await this.transactionPort.createTransaction(newTransaction);
             if(!transaction || !transaction.transaction_id) throw new HttpException('Error al crear la transacción', HttpStatus.BAD_REQUEST);
 
-            await this.goToPay(paymentData, newOrder.order_id);
+            await this.goToPay(paymentData, newOrder.order_id, transaction.transaction_id);
 
             return transaction;
         } catch (error) {
@@ -65,7 +65,7 @@ export class TransactionCaseUse {
         }
     }
 
-    async goToPay(dataPayment: CreatePayment, referencia:string): Promise<any>{
+    async goToPay(dataPayment: CreatePayment, referencia:string, id_transaction:string): Promise<void>{
         try {
             const dateSplit = dataPayment.tarjeta.expired_date.split('/');
             
@@ -79,12 +79,9 @@ export class TransactionCaseUse {
 
             if(!card) throw new HttpException('Error al guardar la tarjeta', HttpStatus.BAD_REQUEST);
 
-            const companyData = await this.paymentPort.getAcceptanceToken();
-            if(!companyData) throw new HttpException('Error al obtener los tokens', HttpStatus.BAD_REQUEST);
-
             const tokens = {
-                acceptance_token: companyData?.data.presigned_acceptance.acceptance_token,
-                personal_data_token: companyData?.data.presigned_personal_data_auth.acceptance_token
+                acceptance_token: dataPayment.tokens.acceptance_token,
+                personal_data_token: dataPayment.tokens.personal_data_token
             }
             
             const transactionData: ICreateTransactionCard ={
@@ -99,7 +96,8 @@ export class TransactionCaseUse {
             if(!transaction) throw new HttpException('Error al crear la transacción', HttpStatus.BAD_REQUEST);
             const amountCents = dataPayment.order.order_total * 100;
             const secret = process.env.SECRET_INTEGRITY;
-            const dataSignature = `${dataPayment.order.order_id!}${amountCents}COP${secret}`;
+            const dataSignature = `${referencia}${amountCents}COP${secret}`;
+            
             const signature = await this.generateSignature(dataSignature);
             
             const creteTransaction: ICreateCharge ={
@@ -113,15 +111,69 @@ export class TransactionCaseUse {
                 reference: referencia,
                 payment_source_id: transaction.data.id
             }
-            console.log(transaction);
             
-            console.log(creteTransaction);
+            const transactionGenerated = await this.paymentPort.startTransaction(creteTransaction);
+            if(!transactionGenerated) throw new HttpException('Error al iniciar la transacción', HttpStatus.BAD_REQUEST);
+            
+            const internalTransaction =  await this.transactionPort.getTransactionById(id_transaction);
+            if(!internalTransaction) throw new HttpException('Error al obtener la transacción', HttpStatus.BAD_REQUEST)
+
+            internalTransaction.transaction_payment_id = transactionGenerated.data.id.toString();
+            internalTransaction.transaction_estado = transactionGenerated.data.status;
+
+            await this.transactionPort.updateTransaction(internalTransaction, id_transaction);
              
-            
+            await this.ValidateStatusTransaction(id_transaction);
         } catch (error) {
             console.log(error.message, error.stack, ':goToPay');
+        }
+    }
+
+    async ValidateStatusTransaction(id_transaction:string, intentos:number = 1): Promise<void | TransactionEntity>{
+        try {
+            const transaction = await this.transactionPort.getTransactionById(id_transaction);
+            if(!transaction || !transaction.transaction_payment_id) throw new HttpException('Error al obtener la transacción', HttpStatus.BAD_REQUEST);
+
+            const transactionDetail = await this.paymentPort.getStatusTransaction(transaction.transaction_payment_id);
+            if(!transactionDetail) throw new HttpException('Error al obtener el estado de la transacción', HttpStatus.BAD_REQUEST);
+
+            if (transactionDetail.data.status === TransactionStatus.PENDING) {
+                if(intentos <= 3){
+                    setTimeout(async () => {
+                        await this.ValidateStatusTransaction(id_transaction, intentos+1);
+                    }, 300000);
+                }
+            }else{
+                transaction.transaction_estado = transactionDetail.data.status;
+                await this.transactionPort.updateTransaction(transaction, id_transaction);
+            }
+            if (intentos ==   1) {
+                return transaction;
+            }
+        } catch (error) {
+            console.log(error.message, error.stack, ':getStatusTransaction');
+        }
+    }
+
+    async getAcceptance(): Promise<IAcceptanceUrl>{
+        try {
+            const companyData = await this.paymentPort.getAcceptanceToken();
+            if (!companyData) throw new HttpException('Error al obtener los tokens', HttpStatus.BAD_REQUEST);
             
-            return null;
+            const data:IAcceptanceUrl = {
+                presigned_acceptance: {
+                    url: companyData?.data.presigned_acceptance.permalink,
+                    token: companyData?.data.presigned_acceptance.acceptance_token
+                },
+                presigned_personal_data_auth: {
+                    url: companyData?.data.presigned_personal_data_auth.permalink,
+                    token: companyData?.data.presigned_personal_data_auth.acceptance_token
+                }
+            }
+            
+            return data;    
+        } catch (error) {
+            throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
         }
     }
 

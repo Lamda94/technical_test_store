@@ -18,7 +18,7 @@ async function bootstrap() {
   app.useBodyParser('json', { limit: '50mb' });
 
   const config = new DocumentBuilder()
-    .setTitle('Strore (Dev)')
+    .setTitle('Store (Dev)')
     .setDescription('Backend del producto web strore.')
     .setVersion('1.0.0')
     .addTag('Article', 'Services for articles')
