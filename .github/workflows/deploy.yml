@@ -66,11 +66,11 @@ jobs:
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo -S ln -s /ubuntu/.nvm/versions/node/v22.13.0/bin/pnpm /usr/bin/pnpm || true"
           ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo -S ln -s /ubuntu/.nvm/versions/node/v22.13.0/bin/pm2 /usr/bin/pm2 || true"
 
-      - name: Testing node version
-        run: |
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "node -v"
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "pnpm -v"
-          ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "pm2 -v"
+    #   - name: Testing node version
+    #     run: |
+    #       ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo node -v"
+    #       ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo pnpm -v"
+    #       ssh -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo pm2 -v"
 
       - name: Unzip project backend in server
         run: |
