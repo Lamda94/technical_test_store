@@ -7,6 +7,8 @@ import { CustomerRepository } from 'src/store/customer/infrastructure/repository
 import { CreatePayment } from '../../domain/entity/transaction.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { PaymentRepository } from '../repository/payment.repository';
+import { DeliveryRepository } from 'src/store/delivery/infrastructure/repository/delivery.repository';
+import { PaymentDataDto } from '../dto/transaction.dto';
 
 @ApiTags('Transaction')
 @Controller('transaction')
@@ -19,12 +21,13 @@ export class TransactionController {
         readonly article: ArticleRepository,
         readonly customer: CustomerRepository,
         readonly payment: PaymentRepository,
+        readonly delivery: DeliveryRepository,
     ){
-        this.transactionCase = new TransactionCaseUse(transaction, customer, article, order, payment);
+        this.transactionCase = new TransactionCaseUse(transaction, customer, article, order, payment, delivery);
     }
 
     @Post('generate')
-    async generateTransaction(@Body() transactionData: CreatePayment){
+    async generateTransaction(@Body() transactionData: PaymentDataDto){
         return await this.transactionCase.initializePayment(transactionData);
     }
 

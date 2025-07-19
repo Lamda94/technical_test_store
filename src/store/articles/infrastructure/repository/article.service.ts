@@ -33,9 +33,6 @@ export class ArticleRepository implements ArticlePort {
     }
   }
 
-  searchArticle(query: string): Promise<ArticleEntity[]> {
-    throw new Error('Method not implemented.');
-  }
   async articleDetail(id: string): Promise<ArticleEntity | null> {
     try {
       const article = await this.articleModel.findOneBy({ article_id: id });
@@ -44,10 +41,17 @@ export class ArticleRepository implements ArticlePort {
       return null;
     }
   }
-  updateArticle(id: string, article: ArticleEntity): Promise<ArticleEntity> {
-    throw new Error('Method not implemented.');
-  }
-  deleteArticle(id: string): Promise<ArticleEntity> {
-    throw new Error('Method not implemented.');
+
+  async updateArticle(id: string, article: ArticleEntity): Promise<ArticleEntity | null> {
+    try {
+      const articleOld = await this.articleModel.findOne({ where: { article_id: id }});
+      const newArticle = {...articleOld, ...article}
+
+      return await this.articleModel.save(newArticle);
+    } catch (error) {
+      console.log(error.message, "Error al actualizar el articulo")
+
+      return null;
+    }
   }
 }

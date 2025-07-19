@@ -7,9 +7,10 @@ import { CustomerModule } from '../customer/customer.module';
 import { ArticlesModule } from '../articles/articles.module';
 import { TransactionRepository } from './infrastructure/repository/transaction.repository';
 import { PaymentRepository } from './infrastructure/repository/payment.repository';
+import { DeliveryModule } from '../delivery/delivery.module';
 
 @Module({
-    imports: [OrderModule, CustomerModule, ArticlesModule, TypeOrmModule.forFeature([TransactionModel])],
+    imports: [DeliveryModule, OrderModule, CustomerModule, ArticlesModule, TypeOrmModule.forFeature([TransactionModel])],
     controllers: [TransactionController],
     providers: [TransactionRepository, PaymentRepository],
     exports: [TransactionRepository],
