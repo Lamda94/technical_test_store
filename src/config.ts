@@ -19,8 +19,7 @@ export const database = {
   migrationsTableName: 'migrations_th',
   migrations: [`src/database/migrations/${configService.get<string>('NODE_ENV')}/*{.ts,.js}`],
   seeds: ['src/**/*.seed.service{.ts,.js}'],
-  // synchronize: IS_LOCAL, // never use TRUE in production!
-  synchronize: true, // never use TRUE in production!
+  synchronize: IS_LOCAL ?? false,
   timezone: configService.get<string>('TZ'),
 };
 
@@ -28,6 +27,7 @@ export const config = {
   database,
   port: configService.get<string>('PORT_APP'),
   node_env: configService.get<string>('NODE_ENV'),
+  secret_key: configService.get<string>('SHARED_SECRET'),
 };
 
 export default registerAs('config', () => config);

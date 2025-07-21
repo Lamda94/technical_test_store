@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { TransactionCaseUse } from '../../application/transaction.case';
 import { TransactionRepository } from '../repository/transaction.repository';
 import { OrderRepository } from 'src/store/order/infrastructure/repository/order.repository';
@@ -9,6 +9,7 @@ import { ApiTags } from '@nestjs/swagger';
 import { PaymentRepository } from '../repository/payment.repository';
 import { DeliveryRepository } from 'src/store/delivery/infrastructure/repository/delivery.repository';
 import { PaymentDataDto } from '../dto/transaction.dto';
+import { HmacGuard } from 'src/common/guards/auth.guard';
 
 @ApiTags('Transaction')
 @Controller('transaction')
@@ -36,6 +37,7 @@ export class TransactionController {
         return await this.transactionCase.ValidateStatusTransaction(id);
     }
 
+    //@UseGuards(HmacGuard)
     @Get('acceptance/links')
     async getAcceptance(){
         return await this.transactionCase.getAcceptance();
