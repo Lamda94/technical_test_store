@@ -1,7 +1,7 @@
 import { CustomerEntity } from "src/store/customer/domain/entity/customer.entity";
 import { OrderEntity } from "src/store/order/domain/entity/order.entity";
 import { CreatePayment, TarjetaEntity, TokensEntity } from "../../domain/entity/transaction.entity";
-import { IsDefined, IsNumber, IsObject, IsString, ValidateNested } from "class-validator";
+import { IsDefined, IsNotEmpty, IsNumber, IsObject, IsString, ValidateNested } from "class-validator";
 import { Type } from 'class-transformer';
 import { CreateCustomerDto } from "src/store/customer/infrastructure/dtos/customer.dto";
 import { CreteOrderDto } from "src/store/order/infrastructure/dto/order.dto";
@@ -46,18 +46,23 @@ class TarjetaDto implements TarjetaEntity{
 }
 
 export class TokenDataDto implements TokensEntity {
+  @IsNotEmpty({ message: 'Token de aceptación no debe estar vacío'})
+  @IsString({ message: 'Token de aceptación debe ser una cadena de texto'})
   acceptance_token: string;
+
+  @IsNotEmpty({ message: 'Token de autorización no debe estar vacío'})
+  @IsString({ message: 'Token de autorización debe ser una cadena de texto'})
   personal_data_token: string;
 }
 
 export class PaymentDataDto implements CreatePayment{
     @ApiProperty({
-        description: 'Token de aceptacion',
+        description: 'Token de aceptación',
         required: true,
         type: TokenDataDto
     })
-    @IsDefined()
-    @IsObject()
+    @IsDefined({ message: 'Los tokens de autorización y aceptación son obligatorios'})
+    @IsObject({ message: 'Los tokens deben estar en un objeto'})
     @ValidateNested()
     @Type(() => TokenDataDto) 
     tokens: TokensEntity;

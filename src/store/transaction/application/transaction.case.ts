@@ -7,15 +7,21 @@ import { HttpException, HttpStatus } from "@nestjs/common";
 import * as moment from 'moment-timezone';
 import { PaymentPort } from "../domain/port/payment.port";
 import { IAcceptanceUrl, ICreateCharge, ICreateTransactionCard, TransactionStatus } from "../domain/entity/payment.enity";
+import { DeliveryCaseUse } from "src/store/delivery/application/delivery.case";
+import { DeliveryPort } from "src/store/delivery/domain/port/delivery.port";
 
 export class TransactionCaseUse {
+    private readonly deliveryCase: DeliveryCaseUse;
     constructor(
         private readonly transactionPort: TransactionPort,
         private readonly customerPort: CustomerPort,
         private readonly articlePort: ArticlePort,
         private readonly orderPort: OrderPort,
         private readonly paymentPort: PaymentPort,
-    ){}
+        readonly deliveryPort: DeliveryPort
+    ){
+        this.deliveryCase = new DeliveryCaseUse(deliveryPort);
+    }
 
     async initializePayment(paymentData: CreatePayment): Promise<TransactionEntity>{
         try {            
@@ -57,6 +63,15 @@ export class TransactionCaseUse {
 
             await this.goToPay(paymentData, newOrder.order_id, transaction.transaction_id);
 
+            await this.deliveryCase.creteDelivery({
+                delivery_addres: paymentData.customer.customer_address,
+                delivery_state: 'GENERATED',
+                delivery_transaction_id: transaction.transaction_id
+            })
+
+            article.article_stock = article.article_stock-paymentData.order.order_amount;
+            await this.articlePort.updateArticle(article.article_id!, article);
+            
             return transaction;
         } catch (error) {
             console.log(error.message, error.stack, ':initializePayment');

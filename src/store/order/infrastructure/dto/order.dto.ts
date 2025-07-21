@@ -10,6 +10,7 @@ export class CreteOrderDto implements OrderEntity{
     })
     @IsUUID()
     order_article_id: string;
+
     @ApiProperty({
         description: 'Cantidad del articulo en la orden',
         example: 2,
@@ -31,5 +32,6 @@ export class CreteOrderDto implements OrderEntity{
         example: 20000,
         required: true,
     })
+    @IsNumber({}, {message: 'El total de la orden debe ser un número'})
     order_total: number;
 }
