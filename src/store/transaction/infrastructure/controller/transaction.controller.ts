@@ -1,15 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { TransactionCaseUse } from '../../application/transaction.case';
 import { TransactionRepository } from '../repository/transaction.repository';
 import { OrderRepository } from 'src/store/order/infrastructure/repository/order.repository';
 import { ArticleRepository } from 'src/store/articles/infrastructure/repository/article.service';
 import { CustomerRepository } from 'src/store/customer/infrastructure/repository/customer.repository';
-import { CreatePayment } from '../../domain/entity/transaction.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { PaymentRepository } from '../repository/payment.repository';
 import { DeliveryRepository } from 'src/store/delivery/infrastructure/repository/delivery.repository';
 import { PaymentDataDto } from '../dto/transaction.dto';
-import { HmacGuard } from 'src/common/guards/auth.guard';
 
 @ApiTags('Transaction')
 @Controller('transaction')

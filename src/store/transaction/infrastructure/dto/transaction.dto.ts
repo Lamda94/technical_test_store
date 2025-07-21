@@ -1,7 +1,7 @@
 import { CustomerEntity } from "src/store/customer/domain/entity/customer.entity";
 import { OrderEntity } from "src/store/order/domain/entity/order.entity";
 import { CreatePayment, TarjetaEntity, TokensEntity } from "../../domain/entity/transaction.entity";
-import { IsDefined, IsNotEmpty, IsNumber, IsObject, IsString, ValidateNested } from "class-validator";
+import { IsDefined, IsNotEmpty, IsNumber, IsNumberString, IsObject, IsString, ValidateNested } from "class-validator";
 import { Type } from 'class-transformer';
 import { CreateCustomerDto } from "src/store/customer/infrastructure/dtos/customer.dto";
 import { CreteOrderDto } from "src/store/order/infrastructure/dto/order.dto";
@@ -23,7 +23,7 @@ class TarjetaDto implements TarjetaEntity{
         example: 1234567890123456,
         required: true,
     })
-    @IsNumber({}, { message: 'El número de la tarjeta debe ser un número' })
+    @IsNumberString({}, { message: 'El número de la tarjeta debe ser un número' })
     tarjeta_number: number;
 
     @IsDefined()
@@ -32,7 +32,7 @@ class TarjetaDto implements TarjetaEntity{
         example: 123,
         required: true,
     })
-    @IsNumber({}, { message: 'El código de verificación debe ser un número' })
+    @IsNumberString({}, { message: 'El código de verificación debe ser un número' })
     verify_code: number;
 
     @IsDefined()
